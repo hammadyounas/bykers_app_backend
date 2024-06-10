@@ -7,7 +7,7 @@ app = Flask(__name__)
 # MongoDB Configuration
 # app.config["MONGO_URI"] = "mongodb://localhost:27017/bike_marketplace"
 # mongo = pymongo(app)
-client = pymongo.MongoClient("mongodb://localhost:27017/")
+client = pymongo.MongoClient("mongodb+srv://hammadyounas:hammadyounas@testcluster.bi2khpc.mongodb.net/")
 db = client["bike_marketplace"]
 sellers = db["sellers"]
 buyers = db["buyers"]
