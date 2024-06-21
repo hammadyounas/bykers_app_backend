@@ -65,27 +65,55 @@ def sell_bike():
 
     return jsonify({"message": "Bike submitted successfully!", "bike_id": str(bike_id.inserted_id)})
 
-# Buyer Route: View All Bikes
+# Buyer Route: View All Bikes with Pagination
 @app.route('/bikes', methods=['GET'])
 def get_bikes():
-    all_bikes = db.bikes.find({"approved": True})
+    # Pagination parameters
+    page = int(request.args.get('page', 1))
+    limit = int(request.args.get('limit', 10))
+    skip = (page - 1) * limit
+
+    all_bikes = db.bikes.find({"approved": True}).skip(skip).limit(limit)
+    total_bikes = db.bikes.count_documents({"approved": True})
+    total_pages = (total_bikes + limit - 1) // limit  # Calculate total pages
+
     bike_list = []
     for bike in all_bikes:
         bike['_id'] = str(bike['_id'])
         bike['images'] = [str(image_id) for image_id in bike.get('images', [])]
         bike_list.append(bike)
-    return jsonify(bike_list)
+
+    return jsonify({
+        "total_bikes": total_bikes,
+        "total_pages": total_pages,
+        "current_page": page,
+        "bikes": bike_list
+    })
 
 # Buyer Route: View Unapproved Bikes (new endpoint)
-@app.route('/bikes/unapproved', methods=['GET'])
+@app.route('/bikes/list', methods=['GET'])
 def get_unapproved_bikes():
-    unapproved_bikes = db.bikes.find({"approved": False})
+    # Pagination parameters
+    page = int(request.args.get('page', 1))
+    limit = int(request.args.get('limit', 10))
+    skip = (page - 1) * limit
+
+    all_bikes = db.bikes.find().skip(skip).limit(limit)
+    total_bikes = db.bikes.count_documents({"approved": True})
+    total_pages = (total_bikes + limit - 1) // limit  # Calculate total pages
+
     bike_list = []
-    for bike in unapproved_bikes:
+    for bike in all_bikes:
         bike['_id'] = str(bike['_id'])
         bike['images'] = [str(image_id) for image_id in bike.get('images', [])]
         bike_list.append(bike)
-    return jsonify(bike_list)
+
+    return jsonify({
+        "total_bikes": total_bikes,
+        "total_pages": total_pages,
+        "current_page": page,
+        "bikes": bike_list
+    })
 
 # Buyer Route: View Bike Details
 @app.route('/bike/<bike_id>', methods=['GET'])
